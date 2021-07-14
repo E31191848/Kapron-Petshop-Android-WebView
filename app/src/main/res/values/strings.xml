@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Kapron Petshop WebView</string>
+    <string name="image_chooser">File Chooser</string>
 </resources>
