@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -12,6 +13,7 @@ import android.net.Uri;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,6 +22,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -32,7 +35,7 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
-    public String URL = "http://192.168.43.29/KapronPetshop";
+    public String URL = "https://kapronpetshop.epizy.com/";
     private WebView myWebView;
     public Context context;
 
@@ -56,15 +59,30 @@ public class MainActivity extends AppCompatActivity {
         // Grant Permission
         checkPermission();
 
+        // Light Status Bar
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        getWindow().setStatusBarColor(ContextCompat.getColor(MainActivity.this,R.color.light));
+
         myWebView = findViewById(R.id.webview);
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        myWebView.loadUrl(URL);
 
         myWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error){
+                handler.proceed();
+            }
+
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl(url);
-                return false;
+                if(url.startsWith("tel:") || url.startsWith("whatsapp:")) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
+                    return true;
+                } else {
+                    view.loadUrl(url);
+                    return false;
+                }
             }
         });
 
@@ -81,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setSavePassword(true);
         webSettings.setSaveFormData(true);
         webSettings.setEnableSmoothTransition(true);
-
 
         myWebView.setWebChromeClient(new WebChromeClient() {
             // for Lollipop, all in one
@@ -199,6 +216,11 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
+
+        myWebView.loadUrl(URL);
     }
 
     // return here when file selected from camera or from SD Card
