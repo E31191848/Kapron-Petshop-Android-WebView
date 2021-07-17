@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Light Status Bar
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        getWindow().setStatusBarColor(ContextCompat.getColor(MainActivity.this,R.color.light));
+        getWindow().setStatusBarColor(ContextCompat.getColor(MainActivity.this, R.color.light));
 
         myWebView = findViewById(R.id.webview);
         WebSettings webSettings = myWebView.getSettings();
@@ -69,20 +69,19 @@ public class MainActivity extends AppCompatActivity {
 
         myWebView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error){
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
                 handler.proceed();
             }
 
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if(url.startsWith("tel:") || url.startsWith("whatsapp:")) {
+                if (!url.contains("kapronpetshop.epizy.com")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
                     return true;
-                } else {
-                    view.loadUrl(url);
-                    return false;
                 }
+                view.loadUrl(url);
+                return false;
             }
         });
 
@@ -110,39 +109,12 @@ public class MainActivity extends AppCompatActivity {
                 }
                 mFilePathCallback = filePathCallback;
 
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-
-                    // create the file where the photo should go
-                    File photoFile = null;
-                    try {
-                        photoFile = createImageFile();
-                        takePictureIntent.putExtra("PhotoPath", mCameraPhotoPath);
-                    } catch (IOException ex) {
-                        // Error occurred while creating the File
-                        Log.e(TAG, "Unable to create Image File", ex);
-                    }
-
-                    // continue only if the file was successfully created
-                    if (photoFile != null) {
-                        mCameraPhotoPath = "file:" + photoFile.getAbsolutePath();
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                                Uri.fromFile(photoFile));
-                    } else {
-                        takePictureIntent = null;
-                    }
-                }
-
                 Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
                 contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
                 contentSelectionIntent.setType("image/*");
 
                 Intent[] intentArray;
-                if (takePictureIntent != null) {
-                    intentArray = new Intent[]{takePictureIntent};
-                } else {
-                    intentArray = new Intent[0];
-                }
+                intentArray = new Intent[0];
 
                 Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
                 chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
