@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.net.Uri;
 import android.content.Context;
 import android.content.Intent;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     public String URL = "https://kapronpetshop.epizy.com/";
     private WebView myWebView;
-    public Context context;
+    ProgressDialog pd;
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -45,9 +46,10 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri> mUploadMessage;
     private Uri mCapturedImageURI = null;
 
-    // the same for Android 5.0 methods only
     private ValueCallback<Uri[]> mFilePathCallback;
+    ;
     private String mCameraPhotoPath;
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("SetJavaScriptEnabled")
@@ -66,11 +68,16 @@ public class MainActivity extends AppCompatActivity {
         myWebView = findViewById(R.id.webview);
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        pd = new ProgressDialog(MainActivity.this);
+        pd.setMessage("Connecting");
+        pd.setCancelable(false);
+        pd.show();
 
         myWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
                 handler.proceed();
+                pd.cancel();
             }
 
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
